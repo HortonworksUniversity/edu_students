@@ -69,8 +69,9 @@ function makeDir() {
 # Create Cloudera repos directory
 
 	if [ ! -d /var/www/html/cloudera-repos ]; then
-		sudo mkdir -p /var/www/html/cloudera-repos/cm7
+		sudo mkdir -p /var/www/html/cloudera-repos/cm7/${CM_VER}
 		sudo mkdir -p /var/www/html/cloudera-repos/cdh7
+		sudo mkdir -p /var/www/html/cloudera-repos/cdh2
 	fi
 }
 
@@ -80,7 +81,6 @@ function getCM() {
 	sudo wget https://[username]:[password]@archive.cloudera.com/p/cm7/${CM_VER}/repo-as-tarball/cm${CM_VER}-redhat7.tar.gz 
 	sudo tar xvfz cm${CM_VER}-redhat7.tar.gz -C /var/www/html/cloudera-repos/cm7 --strip-components=1
 	sudo chmod -R ugo+rX /var/www/html/cloudera-repos/cm7
-	ls /var/www/html/cloudera-repos/cm7
 }
 
 function getCDP() {
@@ -88,18 +88,29 @@ function getCDP() {
 
 	sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cdh7/${CDP_VER}/parcels -P /var/www/html/cloudera-repos
 	sudo chmod -R ugo+rX /var/www/html/cloudera-repos/cdh7
-	ls /var/www/html/cloudera-repos/cdh7
 }
+
+function getCDF() {
+# Pull down CDF manifest, parcel, and sha
+
+	sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cdh2/${CDP_VER}/parcels -P /var/www/html/cloudera-repos
+	sudo chmod -R ugo+rX /var/www/html/cloudera-repos/cdh7
+}
+
 
 function workAround() {
 # This is used for exercise purposes to avoid large downloads across the Internet
 
 # Move CM 
-	sudo tar xvfz /home/sysadmin/downloads/cm${CM_VER}-redhat7.tar.gz -C /var/www/html/cloudera-repos/cm7 --strip-components=1
+	sudo tar xvfz /home/sysadmin/downloads/cm${CM_VER}-redhat7.tar.gz -C /var/www/html/cloudera-repos/cm7/7.2.4 --strip-components=1
 
 # Move CDP parcels
 	sudo rm -r /var/www/html/cloudera-repos/cdh7
 	sudo mv /home/sysadmin/downloads/cdh7 /var/www/html/cloudera-repos
+
+# Move CDF parcels
+	sudo rm -r /var/www/html/cloudera-repos/cdf2
+	sudo mv /home/sysadmin/downloads/cdf2 /var/www/html/cloudera-repos
 
 # Set permissions
 	sudo chmod -R ugo+rX /var/www/html/cloudera-repos
@@ -123,6 +134,7 @@ installHTTP
 makeDir
 #getCM
 #getCDP
+#getCDF
 workAround
 restartHTTP
 checkRepo
