@@ -1,7 +1,7 @@
 admin01.cloudair.lan
-client01.cloudair.lan
-client02.cloudair.lan
-client03.cloudair.lan
+edge01.cloudair.lan
+edge02.cloudair.lan
+mgmt01.cloudair.lan
 master01.cloudair.lan
 master02.cloudair.lan
 master03.cloudair.lan
