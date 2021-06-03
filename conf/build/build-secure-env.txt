@@ -910,10 +910,20 @@ VALIDATE THE MANAGER WEB UI
 	https://client02.cloudair.lan:8443/gateway/manager/admin-ui
 2. Go to the Knox Summary quick link for the manager.
 
+CONFIGURE KNOX GATEWAY JKS
+Knox generates its own test key. This is not good practice.
+This task replaces the current Knox gateway.jks with a keystore importing one of the hdp-tls keys. We can then use the /etc/security/pki/server.crt file where required for Zeppelin, NiFi, etc.
+1. Go to the Knox client.
+	% ssh client02
+2. Run the Generate Knox command.
+	% cd /tmp/hdp-tls
+	% sudo ./generate-hdp-ssl.sh GenerateKnox configs
+3. Use Ambari to restart the Knox Gateway.
+
 CONFIGURE KNOX SSO FOR AMBARI
 1. Open a terminal and get the Public certificate for Knox
 	% openssl s_client -showcerts -connect client02.cloudair.lan:8443
-2. Note there are two keys in this listing. You must use the key for this host. It will say client02.cloudair.lan in the key description.
+2. Note there are two keys in this listing. You must use the key for this host. It will say CN=client02.cloudair.lan in the key description. Be careful not to use the CA key.
 3. Leave this terminal open, so you can copy and paste this into Ambari.
 4. In a second terminal, log on to admin01 and run the Ambari setup command for sso.
 	% sudo ambari-server setup-sso
@@ -952,19 +962,10 @@ rho7bnHWJvUW2izznV5wT9qe
 
 4. Restart Ambari
 	% sudo ambari-server restart
-5. Validate access to Ambari, YARN web UI, Atlas, and to Ranger. Sign in as sysadmin and then prose. Note the differences. Remember this is now SSO. So when you sign on you become this user for all locations.
+5. Validate access to Ambari, YARN web UI, Atlas, and to Ranger. Sign in as slee and then prose. Note the differences. Remember this is now SSO. So when you sign on you become this user for all locations.
 
 TROUBLESHOOTING THE KNOX SSO
 If you get an error saying it can not find the origional.jwt cookie you will need to backout the ambari-server setup-sso, restart Knox, and then repeat. The most likely cause is you imported the wrong certificate.
-
-CONFIGURE KNOX GATEWAY
-This task replaces the current Knox gateway.jks with a keystore importing one of the hdp-ssl keys. We can then use the /etc/security/pki/server.crt file where required for Zeppelin, NiFi, etc.
-1. Go to the Knox client.
-	% ssh client02
-2. Run the Generate Knox command.
-	% cd /tmp/hdp-ssl
-	% sudo ./generate-hdp-ssl.sh GenerateKnox configs
-3. Use Ambari to restart the Knox Gateway.
 
 CONFIGURE ZEPPELIN FOR KNOX ACCESS
 NOTE: There is an example zeppelin shiro file in conf.
@@ -989,39 +990,14 @@ authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter
 5. Validate by gaining access to Zeppelin as dsmith and prose.
 
 GRANT ACCESS TO SPARK HISTORY SERVER
-WORK IN PROGRESS
-1. Collect the Public cert for Knox
-	openssl s_client -showcerts -connect cliet02.cloudair.lan:8443
-2. In Ambari set properties for Spark2 History Server in the env section. 
+1. Collect the Public cert for Knox. Find the key CN=client02.cloudair.lan
+	openssl s_client -showcerts -connect client02.cloudair.lan:8443
+2. In Ambari set properties for Spark2 History Server in the Advance spark2-env section. This is sensative to spacing, ensure this is all on one line.
 % if security_enabled %}
-export SPARK_HISTORY_OPTS='-Dspark.ui.filters=org.apache.hadoop.security.authentication.server.AuthenticationFilter 
--Dspark.org.apache.hadoop.security.authentication.server.AuthenticationFilter.params='type=org.apache.hadoop.security.authentication.server.JWTRedirectAuthenticationHandler, 
-kerberos.principal=HTTP/client02.cloudair.lan@CLOUDAIR.LAN, 
-kerberos.keytab=/etc/security/keytabs/spnego.service.keytab, 
-authentication.provider.url=https://client02.cloudair.lan:8443/gateway/knoxsso/api/v1/websso, 
-public.key.pem=MIIDfzCCAmegAwIBAgIJAL6FLgtpnNUcMA0GCSqGSIb3DQEBCwUAMEUxEzARBgoJ
-kiaJk/IsZAEZFgNsYW4xGDAWBgoJkiaJk/IsZAEZFghjbG91ZGFpcjEUMBIGA1UE
-AxMLY2xvdWRhaXItY2EwHhcNMjAwNzE2MDM1ODA5WhcNMjMwNTA2MDM1ODA5WjBu
-MQswCQYDVQQGEwJVUzELMAkGA1UECBMCQ0ExETAPBgNVBAcTCFBhbG9BbHRvMREw
-DwYDVQQKEwhDbG91ZGFpcjEMMAoGA1UECxMDRURVMR4wHAYDVQQDExVjbGllbnQw
-Mi5jbG91ZGFpci5sYW4wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDF
-AV6hf5wtF8MVcUXFfK9MvTRez7PiV5+g1HqnG+7tlvED42dv3GlNV2LFgLxGNsR1
-knHVxSBp66X1kiLLdmg9lKtEDdqAKAgYxPnlYd8W0JO7ZjVXlO5d4aEyNaZFg6Co
-2eiTOjMSo3FP8Vh0tW3YJUUZdJqLk1Y2k9gXe+vfgWiEhsPsLnZhVSYwsbFXcLIL
-JYiHJg5I+mR5pYY4pOxwiyc279DUh1ENudRPhqLX6aSwhdCN5pVevhaC3sJVBcgH
-i6ZdoHoj4imGhHwO1XP7bQIOGoCgLAd+Bc8fv8oqaPc+BPC3S7H8pG/5wvPcLpEt
-3kONhIMgW5XIu8jBXAufAgMBAAGjSTBHMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggr
-BgEFBQcDAjAmBgNVHREEHzAdghVjbGllbnQwMi5jbG91ZGFpci5sYW6HBKwSABYw
-DQYJKoZIhvcNAQELBQADggEBAD99buaDfXqrX+VBeceQMDU0JMjvd3HySpdK4m3v
-Gh32gRyDmNFMTfG3J0t7wOIPXifAtWICV1DG6ZKMUkAnmjnbIvoVPPt5J47IeFli
-XvXDHjZ3p5ILlBgBNKGdkf/e575nekByJWAH6ID8EA9hPRwVsXwI71lNBIlv2Ii0
-W6MjGgz+wkaOb+SY+bRhj8217Qg+G7QboJf0Dxh5poGu58Vcbmlugpq9hFBI1jcv
-yzds2bVqL5t8L3pWwzChVsUYjO+tk3UwZBYJqgIV0voWh2pAaujX6XBb3O+L5nLA
-8tEM26TWIW/BhLxNzfdlelnI94It42W9YvNNcjL7k8CiNP8=''
+export SPARK_HISTORY_OPTS='-Dspark.ui.filters=org.apache.hadoop.security.authentication.server.AuthenticationFilter -Dspark.org.apache.hadoop.security.authentication.server.AuthenticationFilter.params="type=org.apache.hadoop.security.authentication.server.JWTRedirectAuthenticationHandler,kerberos.principal=HTTP/client02.cloudair.lan@CLOUDAIR.LAN,kerberos.keytab=/etc/security/keytabs/spnego.service.keytab,authentication.provider.url=https://client02.cloudair.lan:8443/gateway/knoxsso/api/v1/websso,public.key.pem=MIIDfzCCAmegAwIBAgIJAJKkqG5aEQFqMA0GCSqGSIb3DQEBCwUAMEUxEzARBgoJkiaJk/IsZAEZFgNsYW4xGDAWBgoJkiaJk/IsZAEZFghjbG91ZGFpcjEUMBIGA1UEAxMLY2xvdWRhaXItY2EwHhcNMjEwNTA1MTc0OTUyWhcNMjQwMjIzMTc0OTUyWjBuMQswCQYDVQQGEwJVUzELMAkGA1UECBMCQ0ExETAPBgNVBAcTCFBhbG9BbHRvMREwDwYDVQQKEwhDbG91ZGFpcjEMMAoGA1UECxMDRURVMR4wHAYDVQQDExVjbGllbnQwMi5jbG91ZGFpci5sYW4wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCMdxKVn0dD7XSUiwIG5o2tcbUrz/OW3UUlxYnOBaYnLD9NO1St3uufn5x0+HRy1xoRCYHthUMh7vrpFZrYndMkL2bEPuI97piGwM0kinJusk5I1AYklHRaHYu4xxdmOyuRiXuZZBo+iIhvlY6i4RMrRruU1fvoy1K8oawXO4x5JedABRRjqfIKh71SE6QI9vFHgWwS9nCqPzHC9RCvJXBXO46ExZ5/vMVNOUuTG1l2Pi82WtFQY8IV96jg+KbsO+qro2Lew/K3Eh4o7uFTue/K6vdd6ciBC32ZnYy+WoOcgcqfsSjFF2kPKQOwHJK8HAd0HGEGQ5TtsgCsRYFRto+LAgMBAAGjSTBHMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjAmBgNVHREEHzAdghVjbGllbnQwMi5jbG91ZGFpci5sYW6HBKwSABYwDQYJKoZIhvcNAQELBQADggEBAK3kn0p9We7mTU46dqDSUzV+AdX8wk1ojR9gmrAZaaWELAlR1GRI9QC5u+eZ8ISwCUKXZlLUX/vuQoAfi4SxZGfqcQJ0ckSG/PzgRJF6/rSt8aSR+wqFKRd7TaVnhCINrK01JNFlTOyP4eQ5tgp5KfYHkYegywrxlRVaFqPqj4aYyXeOO4wQwgrhbWA5sApLP3tV281e22Z3dEjlN3S781VIy+4vTKb5+js5YJm5a/JWewZJ7e/9RgJoDKo2Q7vXqkCb1J5omcPjp0zI9/c0f5NfthWnvoAHRkalnFmet7w9TrKB+2wD7/FTzEihnC98muKHYAH2oIq9lrn5eS6aKGw="'
 {% endif %}
 
 3. Restart and validate
-
 
 LOGIN WITH KNOX GATEWAY
 The next time you access Ambari you will go through the Knox Gateway proxy service. Your LDAP users will be able to access Ambari. 
