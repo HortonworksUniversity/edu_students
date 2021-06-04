@@ -46,7 +46,7 @@ Instructions for setting up the Ubuntu Docker Server. We use Ubuntu 16.04 as thi
         PURPOSE Trainer_Course_Development
         AWS_AMI_ID ami-09eb5e8a83c7aa890  #Ubuntu 16.04
         AWS_Instance_Size r5.4xlarge
-        AWS_root_volume_size 512 
+        AWS_root_volume_size 2048 
 
 4. Recommend associating an EIP and then using a DNS entry in Route53 under hdplabs. This makes life easier as you stop and start the instance.
 
@@ -68,104 +68,88 @@ UPDATE UBUNTU
 	% sudo apt-get dist-upgrade -y
 	% sudo apt-get autoremove
 
-SETUP DOCKER SERVER
-1. On your local host create the tar file backend for docker setup. There are two directories that must be placed onto the AWS EC2 instance, one with conf files and the other with admin scripts. 
-2. Put the setup docker files into a tar file.
-
-	% cd ~/src/edu-docker/docker-server
-	% tar cvf /tmp/edu-docker.tar conf sbin
-
-3. Copy over the tar file
-
-	% scp /tmp/*.tar ubuntu@hostname:/home/ubuntu/
-
-4. Login onto the AWS instance
-
-	% ssh ubuntu@hostname 
-
-5. Extract the edu-docker file
-
-	% tar xvf edu-docker.tar
-
-6. sh leanup
-
-	% rm *.tar 
-
-
 SETUP DATA
 1. The data is pulled in from an S3 bucket. Create a data directory on the ubuntu server. This will be mounted into /var/data on each node.
-
 	% mkdir data
 	% cd data
 
 2. Go to Amazon S3 and open the bucket for public access.
 
-2. Download the zip files from the S3 bucket.
-
+3. Download the zip files from the S3 bucket.
 	% wget https://edu-data-wkd.s3-us-west-1.amazonaws.com/book.zip 
 	% wget https://edu-data-wkd.s3-us-west-1.amazonaws.com/cloudfin.zip 
 	% wget https://edu-data-wkd.s3-us-west-1.amazonaws.com/cloudtel.zip 
 	% wget https://edu-data-wkd.s3-us-west-1.amazonaws.com/latin.zip 
 	% wget https://edu-data-wkd.s3-us-west-1.amazonaws.com/nyse.zip 
 
-3. Unzip these files.
-
+4. Unzip these files.
 	% unzip book.zip
 
-4. Delete the zip files
-	
+5. Delete the zip files
 	% rm *.zip
+
+SETUP DOCKER SERVER
+1. On your local host create the tar file backend for docker setup. There are two directories that must be placed onto the AWS EC2 instance, one with conf files and the other with admin scripts. 
+
+2. Put the setup docker files into a tar file.
+	% cd ~/src/edu-docker/docker-server
+	% tar cvf /tmp/edu-docker.tar conf sbin
+
+3. Copy over the tar file
+	% scp /tmp/*.tar ubuntu@hostname:/home/ubuntu/
+
+4. Login onto the AWS instance
+	% ssh ubuntu@hostname 
+
+5. Extract the edu-docker file
+	% tar xvf edu-docker.tar
+
+6. cleanup
+	% rm *.tar 
+
 
 INSTALL DOCKER 
 1. Run setup for the backend. 
 IMPORTANT This requires you to have an account on github, you will need to provided your userid and password to download. Sudo is built into this script, run as ubuntu. 
 IMPORTANT Validate the setup file for the correct github repo to clone.
-
 	% ./sbin/setup-ubuntu-docker.sh
 
 2. Provide login for github.
 
 3. You must logout and log back in to setup docker environment. 
 IMPORTANT Ensure you do this step.
-
 	% exit 
 
 4. Validate
-
 	% ssh ubuntu@hostname
 	% docker container ls
 
 CHECK THE RIGHT BRANCH
 The git code should already be in place. This checks for branch and access. You will need acces to the github repo. See JLW.
 1. Go to the src directory for the repo
-
-	% cd ~/src/edu-docker
+	% cd ~/src/edu_docker
 	% git branch 
 	% git pull
 
 BUILD IMAGES
 Build and repo the images.
 1. Run the build. Then review the list of images.
-
 	% edu-docker.sh build
 
 2. If you are submitting the images to a repo. There may be a public repo at Docker hub for wmdailey. I normally skip this task.
-
 	% edu-docker.sh repo
 
 RUN CONTAINERS
 This setups for the admn environment. 
 1. Run containers
-
 	% edu-docker.sh network
 	% edu-docker.sh cluster
 
 3. Validate your cli environment from ubuntu. 
-
 	% ssh sysadmin@admin01 
 	% sudo cloudera-server status 
 	% exit
-	% ssh devuser@client01 
+	% ssh devuser@edge01 
 	% exit
 
 VALIDATE
@@ -182,9 +166,10 @@ Customizations to desktop
 2. Set password for keychain
 3. Select  icon.
 4. Select Google Chrome as default browser
-5. Menu > Systems > Mate Terminal (Pin onto desktop/put on favorites)
-6. Menu > Internet > Google Chrome (put on favorites)
+5. Menu > Systems > Mate Terminal (Pin onto desktop/put in favorites)
+6. Menu > Internet > Google Chrome (Pin onto desktop/put in favorites)
 7. Change the color of the terminal to black font and white background 
+8. Change the background image to Cloudera. 
 
 BUILD AMI 
 1. Use AWS EC2 to stop the running instance
