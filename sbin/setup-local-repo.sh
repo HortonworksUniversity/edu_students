@@ -93,10 +93,11 @@ function getCDP() {
 function getCDF() {
 # Pull down CDF manifest, parcel, and sha
 
-	sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cdh2/${CDP_VER}/parcels -P /var/www/html/cloudera-repos
+	sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/manifest.json 
+	sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/CFM-2.1.1.0-13-el7.parcel 
+	sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/CFM-2.1.1.0-13-el7.parcel.sha
 	sudo chmod -R ugo+rX /var/www/html/cloudera-repos/cdh7
 }
-
 
 function workAround() {
 # This is used for exercise purposes to avoid large downloads across the Internet
