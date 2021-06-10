@@ -1,0 +1,55 @@
+# This README is for training purposes only and is to be used only
+# in support of approved training. The author assumes no liability
+# for use outside of a training environments. Unless required by
+# applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
+# OR CONDITIONS OF ANY KIND, either express or implied.
+
+# Title: 5-ambari-tls.sh
+# Author: WKD
+# Date: 200530
+
+Note: This work was built on scripts provided by Cloudera PS. They have been modified for classroom purposes.
+
+INSTALL REQUESTS PYTHON PACKAGE
+1. Install this package.
+
+	pip
+	sudo pip install requests --upgrade
+
+if there is an error run:
+	sudo yum remove python-pip
+	sudo yum install python-pip
+
+RUN PYTHON SCRIPT TO CONFIGURE TLS IN AMBARI 
+1. On the Ambari host change directory to the ambari-tls
+
+	% sudo chmod 777 ~/sbin/tls/ambari-tls/
+
+2. Validate the config file and the definitions file. Ensure you are using the json/definitions.json.master file.
+
+	% cd ~/sbin/tls/ambari-tls
+	% cat configs
+	% cat definitions.json
+
+3. Run the python script to configure Ambari for TLS for either http or https.
+
+HTTP:
+	% python ambari-tls.py --protocol http --port 8080 --username sysadmin --password BadPass%1 --host admin01.cloudair.lan --configfile configs | tee /tmp/ambari-tls.log
+
+HTTPS:
+	% python ambari-tls.py --protocol https --port 8443 --username sysadmin --password BadPass%1 --host admin01.cloudair.lan --configfile configs | tee /tmp/ambari-tls.log
+
+4. Delete the toSet up files.
+
+	% rm doSet_*
+
+CUSTOM TLS DEFINITIONS
+1. In the json directory are all of the definition files. The definitions.json.hdp is the master properties file. You will have to modify it to map to your selection of hosts by either removing or adding in services.
+
+2. In the json directory there are custom definitions for additional services, these include Knox, NiFi, and Storm.
+
+3. In all cases you must copy the json of your choice over to the definitions.json file located in ambari-tls.
+
+	% cd ~/ambari-tls
+	% cp json/definitions.json.nifi definitions.json
