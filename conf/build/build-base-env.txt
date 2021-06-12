@@ -171,6 +171,25 @@ Customizations to desktop
 7. Change the color of the terminal to black font and white background 
 8. Change the background image to Cloudera. 
 
+PULL FILES ONTO INFRA01
+To support the use of a local repo do the following:
+1. Logon
+2. Go to admin01
+	ssh sysadmin@admin01
+3. Copy a pull file script
+	scp sbin/admin/pull-files.sh infra01:/home/sysadmin
+4. Logon to infra01
+	ssh infra01
+5. Make a directory
+	mkdir downloads
+	mv pull-files.sh downloads
+6. Execute script
+	./pull-files.sh
+7. Move the cfm2 and cdh7 up a directory and delete p directory.
+	mv p/cfm2 .
+	mv p/cdh7 .
+
+
 BUILD AMI 
 1. Use AWS EC2 to stop the running instance
 2. Create an AMI 
