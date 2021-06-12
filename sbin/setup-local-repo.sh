@@ -31,7 +31,7 @@ LOGFILE=${DIR}/log/setup-local-repo.log
 # FUNCTIONS
 function usage() {
         echo "Usage: $(basename $0) [cm_version_number] [cdp_version_number]"
-        echo "Example: $(basename $0) 7.2.4 7.1.5"
+        echo "Example: $(basename $0) 7.2.4 7.1.5.0"
         exit 1
 }
 
@@ -99,19 +99,36 @@ function getCDF() {
 	sudo chmod -R ugo+rX /var/www/html/cloudera-repos/cdh7
 }
 
+function getCSD() {
+# The CSD files are need by Cloudera Manager to install the services. 
+# They are jar files to be placed into /opt/cloudera/csd on the CM host.
+
+	wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/NIFI-1.13.2.2.1.1.0-13.jar
+	wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/NIFIREGISTRY-0.8.0.2.1.1.0-13.jar
+}
+
 function workAround() {
-# This is used for exercise purposes to avoid large downloads across the Internet
+# This is used for exercise purposes to avoid large Downloads across the Internet
 
 # Move CM 
-	sudo tar xvfz /home/sysadmin/downloads/cm${CM_VER}-redhat7.tar.gz -C /var/www/html/cloudera-repos/cm7/7.2.4 --strip-components=1
+	sudo tar xvfz ${HOME}/Downloads/cm${CM_VER}-redhat7.tar.gz -C /var/www/html/cloudera-repos/cm7/7.2.4 --strip-components=1
 
 # Move CDP parcels
 	sudo rm -r /var/www/html/cloudera-repos/cdh7
-	sudo mv /home/sysadmin/downloads/cdh7 /var/www/html/cloudera-repos
+	sudo mv ${HOME}/Downloads/cdh7 /var/www/html/cloudera-repos
+
+# Move CSD jar files
+	mv ${HOME}/Downloads/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/NIFI*jar ${HOME}/Downloads 
+	scp -o "ForwardAgent yes" ${HOME}/Downloads/NIFI*jar sysadmin@admin01.cloudair.lan:/tmp
+	ssh -o StrictHostKeyChecking=no -tt admin01.cloudair.lan "sudo mv /tmp/NIFI*jar /opt/cloudera/csd/" 
+	 ssh -o StrictHostKeyChecking=no -tt admin01.cloudair.lan "sudo chown cloudera-scm:cloudera-scm /opt/cloudera/csd/NIFI*jar"
+ 	ssh -o StrictHostKeyChecking=no -tt admin01.cloudair.lan "sudo chmod 644 /opt/cloudera/csd/NIFI*jar"
+ 	ssh -o StrictHostKeyChecking=no -tt admin01.cloudair.lan "sudo systemctl restart cloudera-scm-server"
 
 # Move CDF parcels
 	sudo rm -r /var/www/html/cloudera-repos/cdf2
-	sudo mv /home/sysadmin/downloads/cdf2 /var/www/html/cloudera-repos
+	sudo mv ${HOME}/Downloads/cdf2 /var/www/html/cloudera-repos
+
 
 # Set permissions
 	sudo chmod -R ugo+rX /var/www/html/cloudera-repos
@@ -136,6 +153,7 @@ makeDir
 #getCM
 #getCDP
 #getCDF
+#getCSD
 workAround
 restartHTTP
 checkRepo

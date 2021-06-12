@@ -31,7 +31,7 @@ LOGFILE=${DIR}/log/setup-local-repo.log
 # FUNCTIONS
 function usage() {
         echo "Usage: $(basename $0) [cm_version_number] [cdp_version_number]"
-        echo "Example: $(basename $0) 7.2.4 7.1.5"
+        echo "Example: $(basename $0) 7.2.4 7.1.5.0"
         exit 1
 }
 
@@ -62,7 +62,7 @@ function getCM() {
 function getCDP() {
 # Pull down CDH parcels
 
-	wget --recursive --no-parent --no-host-directories https://@abed8166-1467-426d-bf32-7f9a066f7417:5d07569c1aa0@archive.cloudera.com/p/cdh7/${CDP_VER}/parcels
+	wget --recursive --no-parent --no-host-directories https://abed8166-1467-426d-bf32-7f9a066f7417:5d07569c1aa0@archive.cloudera.com/p/cdh7/${CDP_VER}/parcels
 }
 
 function getCDF() {
@@ -73,8 +73,17 @@ function getCDF() {
 	wget --recursive --no-parent --no-host-directories https://abed8166-1467-426d-bf32-7f9a066f7417:5d07569c1aa0@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/CFM-2.1.1.0-13-el7.parcel.sha
 }
 
+
+function getCSD() {
+# Pull down CSD files for NiFi and NiFi registry.
+
+	wget --recursive --no-parent --no-host-directories https://abed8166-1467-426d-bf32-7f9a066f7417:5d07569c1aa0@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/NIFI-1.13.2.2.1.1.0-13.jar
+	wget --recursive --no-parent --no-host-directories https://abed8166-1467-426d-bf32-7f9a066f7417:5d07569c1aa0@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/NIFIREGISTRY-0.8.0.2.1.1.0-13.jar
+}
+
 # Main
 checkArg 2 
 getCM
 getCDP
 getCDF
+getCSD
