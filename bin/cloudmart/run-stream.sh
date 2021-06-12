@@ -27,7 +27,7 @@ DB_HOSTNAME=db01.cloudair.lan
 DB_PORT=5432
 DB_NAME=cloudmart
 DB_USER=devuser
-DB_PASSWORD=BadPass%1
+PGPASSWORD=BadPass%1
 QUERY_DIR=/var/query/cloudmart
 OPTION=$1
 INPUT=$2
@@ -78,8 +78,7 @@ function pushFile() {
 
 function runQuery() {
 
-	
-	psql -h ${DB_HOSTNAME} -d ${DB_NAME} -U ${DB_USER} -p ${DB_PASSWORD} -f ${QUERY_DIR}/query_0.sql
+	psql -h ${DB_HOSTNAME} -d ${DB_NAME} -U ${DB_USER} -f ${QUERY_DIR}/query_0.sql
 
 }
 
