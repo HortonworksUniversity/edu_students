@@ -57,6 +57,7 @@ function installHTTP() {
 # Install http server
 
 	if [ ! -d /var/www/html ]; then
+		echo "Install httpd"
 		sudo yum install -y httpd
 		sudo sed -i -e 's/80/8060/g' /etc/httpd/conf/httpd.conf
         	sudo systemctl enable httpd
@@ -85,8 +86,9 @@ function repoCM() {
 	#sudo tar xvfz cm${CM_VER}-redhat7.tar.gz -C /var/www/html/cloudera-repos/cm7 --strip-components=1
 
 	# Edu work around
-	sudo aws s3 cp s3://admin-public/cloudera-parcels/cm7/cm${CM_VER}-redhat7.tar.gz /var/www/html/cloudera-repos/cm7/
-	sudo tar xvfz /var/www/html/cloudera-repos/cm7/cm${CM_VER}-redhat7.tar.gz -C /var/www/html/cloudera-repos/cm7 --strip-components=1
+	sudo aws s3 cp s3://admin-public/cloudera-parcels/cm7/cm${CM_VER}-redhat7.tar.gz /var/www/html/cloudera-repos/cm7/${CM_VER}
+	sudo tar xvfz /var/www/html/cloudera-repos/cm7/${CM_VER}/cm${CM_VER}-redhat7.tar.gz -C /var/www/html/cloudera-repos/cm7/${CM_VER} --strip-components=1
+	sudo rm /var/www/html/cloudera-repos/cm7/${CM_VER}/cm${CM_VER}-redhat7.tar.gz
 
 	sudo chmod -R ugo+rX /var/www/html/cloudera-repos/cm7
 }
@@ -122,9 +124,9 @@ function repoCFM() {
 	#sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/CFM-2.1.1.0-13-el7.parcel.sha
 
 	# Edu work around
-	sudo aws s3 cp s3://admin-public/cloudera-parcels/CFM/manifest.json /var/www/html/cloudera-repos/cfm2/
-	sudo aws s3 cp s3://admin-public/cloudera-parcels/CFM/CFM-2.0.1.0-71-el7.parcel.sha /var/www/html/cloudera-repos/cfm2/
-	sudo aws s3 cp s3://admin-public/cloudera-parcels/CFM/CFM-2.0.1.0-71-el7.parcel /var/www/html/cloudera-repos/cfm2/
+	sudo aws s3 cp s3://admin-public/cloudera-parcels/CFM/manifest.json /var/www/html/cloudera-repos/cfm2/2.0.1/
+	sudo aws s3 cp s3://admin-public/cloudera-parcels/CFM/CFM-2.0.1.0-71-el7.parcel.sha /var/www/html/cloudera-repos/cfm2/2.0.1/
+	sudo aws s3 cp s3://admin-public/cloudera-parcels/CFM/CFM-2.0.1.0-71-el7.parcel /var/www/html/cloudera-repos/cfm2/2.0.1/
 
 	sudo chmod -R ugo+rX /var/www/html/cloudera-repos/cfm2
 }
