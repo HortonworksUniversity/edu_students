@@ -31,7 +31,7 @@ LOGFILE=${DIR}/log/setup-local-repo.log
 # FUNCTIONS
 function usage() {
         echo "Usage: $(basename $0) [cm_version_number] [cdp_version_number]"
-        echo "Example: $(basename $0) 7.2.4 7.1.5.0"
+        echo "Example: $(basename $0) 7.1.3 7.1.2"
         exit 1
 }
 
@@ -58,7 +58,7 @@ function installHTTP() {
 
 	if [ ! -d /var/www/html ]; then
 		sudo yum install -y httpd
-		sudo sed -i -e 's/Listen 80/Listen 8060/g' /etc/httpd/conf/httpd.conf
+		sudo sed -i -e 's/80/8060/g' /etc/httpd/conf/httpd.conf
         	sudo systemctl enable httpd
         	sudo systemctl start httpd
    		sudo systemctl status httpd	
@@ -71,67 +71,71 @@ function makeDir() {
 	if [ ! -d /var/www/html/cloudera-repos ]; then
 		sudo mkdir -p /var/www/html/cloudera-repos/cm7/${CM_VER}
 		sudo mkdir -p /var/www/html/cloudera-repos/cdh7
-		sudo mkdir -p /var/www/html/cloudera-repos/cdh2
+		sudo mkdir -p /var/www/html/cloudera-repos/cfm2
 	fi
 }
 
-function getCM() {
+function repoCM() {
 # Pull down and setup CM tarfile
 
-	sudo wget https://[username]:[password]@archive.cloudera.com/p/cm7/${CM_VER}/repo-as-tarball/cm${CM_VER}-redhat7.tar.gz 
-	sudo tar xvfz cm${CM_VER}-redhat7.tar.gz -C /var/www/html/cloudera-repos/cm7 --strip-components=1
+	echo "Install CM repo"
+
+	# Install repo from Cloudera paywall 
+	#sudo wget https://[username]:[password]@archive.cloudera.com/p/cm7/${CM_VER}/repo-as-tarball/cm${CM_VER}-redhat7.tar.gz 
+	#sudo tar xvfz cm${CM_VER}-redhat7.tar.gz -C /var/www/html/cloudera-repos/cm7 --strip-components=1
+
+	# Edu work around
+	sudo aws s3 cp s3://admin-public/cloudera-parcels/cm7/cm${CM_VER}-redhat7.tar.gz /var/www/html/cloudera-repos/cm7/
+	sudo tar xvfz /var/www/html/cloudera-repos/cm7/cm${CM_VER}-redhat7.tar.gz -C /var/www/html/cloudera-repos/cm7 --strip-components=1
+
 	sudo chmod -R ugo+rX /var/www/html/cloudera-repos/cm7
 }
 
-function getCDP() {
+function repoCDP() {
 # Pull down CDH parcels
 
-	sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cdh7/${CDP_VER}/parcels -P /var/www/html/cloudera-repos
+	echo "Install CDP repo
+
+	# Install repo from Cloudera paywall 
+	#sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cdh7/${CDP_VER}/parcels -P /var/www/html/cloudera-repos
+
+	# Edu work around
+	sudo aws s3 cp s3://admin-public/cloudera-parcels/${CDP_VER}/manifest.json /var/www/html/cloudera-repos/cdh7/${CDP_VER}/
+	sudo aws s3 cp s3://admin-public/cloudera-parcels/${CDP_VER}/CDH-7.1.2-1.cdh7.1.2.p0.4253134-el7.parcel.sha /var/www/html/cloudera-repos/cdh7/${CDP_VER}/
+	sudo aws s3 cp s3://admin-public/cloudera-parcels/${CDP_VER}/CDH-7.1.2-1.cdh7.1.2.p0.4253134-el7.parcel /var/www/html/cloudera-repos/cdh7/${CDP_VER}/
+
+	sudo aws s3 cp s3://admin-public/cloudera-parcels/7.1.3/manifest.json /var/www/html/cloudera-repos/cdh7/7.1.3/
+	sudo aws s3 cp s3://admin-public/cloudera-parcels/7.1.3/CDH-7.1.3-1.cdh7.1.3.p0.4992530-el7.parcel.sha /var/www/html/cloudera-repos/cdh7/7.1.3/
+	sudo aws s3 cp s3://admin-public/cloudera-parcels/7.1.3/CDH-7.1.3-1.cdh7.1.3.p0.4992530-el7.parcel /var/www/html/cloudera-repos/cdh7/7.1.3/
+
 	sudo chmod -R ugo+rX /var/www/html/cloudera-repos/cdh7
 }
 
-function getCDF() {
-# Pull down CDF manifest, parcel, and sha
+function repoCFM() {
+# Pull down CFM manifest, parcel, and sha
 
-	sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/manifest.json 
-	sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/CFM-2.1.1.0-13-el7.parcel 
-	sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/CFM-2.1.1.0-13-el7.parcel.sha
-	sudo chmod -R ugo+rX /var/www/html/cloudera-repos/cdh7
+	echo "Install CFM repo"
+
+	# Install repo from Cloudera paywall 
+	#sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/manifest.json 
+	#sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/CFM-2.1.1.0-13-el7.parcel 
+	#sudo wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/CFM-2.1.1.0-13-el7.parcel.sha
+
+	# Edu work around
+	sudo aws s3 cp s3://admin-public/cloudera-parcels/CFM/manifest.json /var/www/html/cloudera-repos/cfm2/
+	sudo aws s3 cp s3://admin-public/cloudera-parcels/CFM/CFM-2.0.1.0-71-el7.parcel.sha /var/www/html/cloudera-repos/cfm2/
+	sudo aws s3 cp s3://admin-public/cloudera-parcels/CFM/CFM-2.0.1.0-71-el7.parcel /var/www/html/cloudera-repos/cfm2/
+
+	sudo chmod -R ugo+rX /var/www/html/cloudera-repos/cfm2
 }
 
-function getCSD() {
+function repoCSD() {
 # The CSD files are need by Cloudera Manager to install the services. 
 # They are jar files to be placed into /opt/cloudera/csd on the CM host.
 
-	wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/NIFI-1.13.2.2.1.1.0-13.jar
-	wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/NIFIREGISTRY-0.8.0.2.1.1.0-13.jar
-}
-
-function workAround() {
-# This is used for exercise purposes to avoid large Downloads across the Internet
-
-# Move CM 
-	sudo tar xvfz ${HOME}/Downloads/cm${CM_VER}-redhat7.tar.gz -C /var/www/html/cloudera-repos/cm7/7.2.4 --strip-components=1
-
-# Move CDP parcels
-	sudo rm -r /var/www/html/cloudera-repos/cdh7
-	sudo mv ${HOME}/Downloads/cdh7 /var/www/html/cloudera-repos
-
-# Move CSD jar files
-	mv ${HOME}/Downloads/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/NIFI*jar ${HOME}/Downloads 
-	scp -o "ForwardAgent yes" ${HOME}/Downloads/NIFI*jar sysadmin@admin01.cloudair.lan:/tmp
-	ssh -o StrictHostKeyChecking=no -tt admin01.cloudair.lan "sudo mv /tmp/NIFI*jar /opt/cloudera/csd/" 
-	 ssh -o StrictHostKeyChecking=no -tt admin01.cloudair.lan "sudo chown cloudera-scm:cloudera-scm /opt/cloudera/csd/NIFI*jar"
- 	ssh -o StrictHostKeyChecking=no -tt admin01.cloudair.lan "sudo chmod 644 /opt/cloudera/csd/NIFI*jar"
- 	ssh -o StrictHostKeyChecking=no -tt admin01.cloudair.lan "sudo systemctl restart cloudera-scm-server"
-
-# Move CDF parcels
-	sudo rm -r /var/www/html/cloudera-repos/cdf2
-	sudo mv ${HOME}/Downloads/cdf2 /var/www/html/cloudera-repos
-
-
-# Set permissions
-	sudo chmod -R ugo+rX /var/www/html/cloudera-repos
+	echo "Install CSD repo in support of CFM, if required"
+	#wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/NIFI-1.13.2.2.1.1.0-13.jar
+	#wget --recursive --no-parent --no-host-directories https://[username]:[password]@archive.cloudera.com/p/cfm2/2.1.1.0/redhat7/yum/tars/parcel/NIFIREGISTRY-0.8.0.2.1.1.0-13.jar
 }
 
 function restartHTTP() {
@@ -143,17 +147,16 @@ function restartHTTP() {
 function checkRepo() {
 
 	echo "Now test the repo by using a browser"
-	echo "http://infra.cloudair.lan:8060"
+	echo "http://worker03:8060/cloudera-repos"
 }
 
 # Main
 checkArg 2 
 installHTTP
 makeDir
-#getCM
-#getCDP
-#getCDF
-#getCSD
-workAround
+repoCM
+repoCDP
+repoCFM
+#repoCSD
 restartHTTP
 checkRepo
